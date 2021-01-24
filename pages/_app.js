@@ -1,7 +1,6 @@
 import Head from "next/head";
 import '../styles/antd.less'
-// import '../styles/globals.css';
-import '../styles/tailwind.css';
+import '../styles/globals.css';
 
 function MyApp({ Component, pageProps }) {
   return (

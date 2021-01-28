@@ -71,7 +71,7 @@ export default function Home() {
                   next={loadMoreRows}
                   hasMore={!isEnd}
                   loader={<div className="text-center"><Spin /></div>}
-                  endMessage={<Alert closable className="text-center" message="All data has been fetched" type="success" />}
+                  endMessage={repositories.length <= LIMIT ? undefined : <Alert closable className="text-center" message="All data has been fetched" type="success" />}
                   // below props only if you need pull down functionality
                   refreshFunction={loadMoreRows}
                   pullDownToRefresh

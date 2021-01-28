@@ -66,7 +66,9 @@ export default function Home() {
               </div>
               <div className='w-full h-full'>
                 <InfiniteScroll
-                  className='overflow-hidden'
+                  className={css`
+                    overflow: hidden !important;
+                  `}
                   dataLength={repositories.length} //This is important field to render the next data
                   next={loadMoreRows}
                   hasMore={!isEnd}

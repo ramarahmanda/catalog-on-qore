@@ -85,6 +85,7 @@ declare module "@feedloop/qore-client" {
     };
     params: {
       q?: string;
+      categoryId?: string;
     };
     actions: {};
   };

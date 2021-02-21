@@ -6,7 +6,6 @@ import schema from "./qore.schema.json";
 
 export const client = new QoreClient<ProjectSchema>({
   ...config,
-  getToken: () => Cookies.get("token"),
   onError: (error) => {
     switch (error.message) {
       case "Request failed with status code 401":

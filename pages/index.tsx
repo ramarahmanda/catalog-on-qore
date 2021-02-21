@@ -8,9 +8,12 @@ import {
   List,
   Spin,
   Alert,
-  Modal
+  Modal,
+  Dropdown,
+  Menu
 } from "antd";
 import {
+  DownOutlined,
   EyeOutlined,
   GithubOutlined,
   SearchOutlined,
@@ -23,13 +26,15 @@ import estimateReadTime from './api/estimate-read'
 import InfiniteScroll from 'react-infinite-scroll-component';
 import Link from "next/link";
 import ReactMarkdown from 'react-markdown'
+import qoreContext from "./../qoreContext";
 
 const LIMIT = 50
 
 export default function Home() {
-  const [page, setPage] = React.useState<{ offset: number, limit: number, order: 'desc' | 'asc', q?: string }>({ offset: 0, limit: LIMIT, order: 'desc' })
+  const [page, setPage] = React.useState<{ offset: number, limit: number, order: 'desc' | 'asc', q?: string, category?: { label: string, value: string } }>({ offset: 0, limit: LIMIT, order: 'desc', category: { value: 'all', label: 'All' } })
   const [isEnd, setEnd] = React.useState(false)
   const [repositories, setRepositories] = React.useState<ProjectSchema['allRepository']['read'][]>([])
+  const { data: categories } = qoreContext.views.allCategory.useListRow();
   const loadMoreRows = React.useCallback(async () => {
     const { data } = await client.views.allRepository.readRows({ ...page, offset: repositories.length }).toPromise()
     setRepositories(c => [...c, ...data?.nodes || []])
@@ -41,9 +46,17 @@ export default function Home() {
     loadMoreRows()
   }, [])
 
+  const onCategorySelect = React.useCallback(async (props: { label: string, value: string }) => {
+    const { value: id } = props
+    const categoryId = id !== 'all' ? id : undefined
+    setPage(c => ({ ...c, category: props }))
+    const { data } = await client.views.allRepository.readRows({ ...page, offset: 0, categoryId }).toPromise()
+    setRepositories([...data?.nodes || []])
+  }, [page])
   const onSearch = React.useCallback(async (search: string) => {
     setPage(c => ({ ...c, q: search }))
-    const { data } = await client.views.allRepository.readRows({ ...page, offset: 0, q: search }).toPromise()
+    const { limit, category } = page
+    const { data } = await client.views.allRepository.readRows({ limit, offset: 0, q: search || undefined, categoryId: category?.value }).toPromise()
     setRepositories([...data?.nodes || []])
   }, [page])
   return (
@@ -62,7 +75,18 @@ export default function Home() {
                 <p className="mt-3 max-w-2xl mx-auto text-xl text-gray-500 sm:mt-4">
                   Browse through our professionally designed selection of free templates and customize a template for any occasion.
                   </p>
-                <Input autoFocus onPressEnter={(event) => onSearch(event.currentTarget.value)} className={css`max-width: 50%; margin:10px;`} size="large" placeholder="Find your template" prefix={<SearchOutlined />} />
+                <Dropdown
+                  overlay={<Menu onClick={(v) => {
+                    onCategorySelect({ value: v.key.toString(), label: v.domEvent.currentTarget.innerText })
+                  }}>
+                    <Menu.Item key="all">All</Menu.Item>
+                    {categories.map(c => <Menu.Item key={c.id}>
+                      {c.name}
+                    </Menu.Item>)}
+                  </Menu>}
+                >
+                  <Button type='primary' size='large'>{page.category?.label} <DownOutlined /></Button>
+                </Dropdown><Input autoFocus onPressEnter={(event) => onSearch(event.currentTarget.value)} className={css`max-width: 50%; margin:10px;`} size="large" placeholder="Find your template" prefix={<SearchOutlined />} />
               </div>
               <div className='w-full h-full'>
                 <InfiniteScroll
@@ -215,7 +239,7 @@ const ModalBlog = (props: { visible: boolean, onCancel: () => void, data?: Proje
 
         </div>
         <div className="mt-6 prose prose-indigo prose-lg text-gray-500 mx-auto">
-          <img className="w-full rounded-lg" src={props.data?.photoUrl} alt="" width="1310" height="873" />
+          <img className="w-full rounded-lg max-h-lg" src={props.data?.photoUrl} alt="" width="1310" height="873" />
           <ReactMarkdown children={props.data?.content || ""} />
         </div>
       </div>

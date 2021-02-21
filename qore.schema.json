@@ -218,6 +218,13 @@
   ],
   "roles": [
     {
+      "name": "admin",
+      "isAdmin": true,
+      "isEditor": false,
+      "isPublic": false,
+      "permissions": []
+    },
+    {
       "name": "public",
       "isAdmin": false,
       "isEditor": false,
@@ -225,19 +232,26 @@
       "permissions": [
         {
           "insert": false,
+          "select": false,
+          "update": false,
+          "delete": false,
+          "viewId": "allMember"
+        },
+        {
+          "insert": false,
           "select": true,
           "update": false,
           "delete": false,
           "viewId": "allRepository"
+        },
+        {
+          "insert": false,
+          "select": true,
+          "update": false,
+          "delete": false,
+          "viewId": "allCategory"
         }
       ]
-    },
-    {
-      "name": "admin",
-      "isAdmin": true,
-      "isEditor": false,
-      "isPublic": false,
-      "permissions": []
     }
   ],
   "forms": [],
@@ -301,7 +315,10 @@
       "id": "allRepository",
       "name": "All Repository",
       "tableId": "repository",
-      "parameters": [{ "slug": "q", "type": "text", "required": false }],
+      "parameters": [
+        { "slug": "q", "type": "text", "required": false },
+        { "slug": "categoryId", "type": "text" }
+      ],
       "sorts": [],
       "fields": [
         {
@@ -433,7 +450,7 @@
         }
       ],
       "design": null,
-      "filter": "name.startsWith($param.q)"
+      "filter": "name.startsWith($param.q) AND (category.id = $param.categoryId)"
     },
     {
       "id": "allCategory",
